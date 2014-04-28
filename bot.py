@@ -40,7 +40,9 @@ def main():
     )
     for _ in range(MAX_PAGE_TRY):
         d = pq(url=RANDOM_PAGE_URL)
-        title = d('title').text()
+        title = d('title').text().split('-')[0].strip()
+        if not title:
+            print('title is empty')
 
         elements = d('li.gallerybox img, .thumb img')
         elements = [x for x in elements if is_content_element(x)]
@@ -57,8 +59,17 @@ def main():
 
         r = requests.get(full_image_url(img))
 
-        text = "「{}」の項「{}」\nhttp://ja.wikipedia.org/wiki/{}".format(title, text, quote(title))
-        twitter.update_status_with_media(status=text, media=io.BytesIO(r.content))
+        status = "「{}」の項「{}」\nhttp://ja.wikipedia.org/wiki/{}".format(title, text, quote(title))
+        if len(status) > 140:
+            exceed = len(status) - 140
+            if len(text) - exceed < 5:
+                print('text is too long ({}, {})'.format(repr(title), repr(text)))
+                continue
+            else:
+                text = text[:- (exceed + 1)] + '…'
+            status = "「{}」の項「{}」\nhttp://ja.wikipedia.org/wiki/{}".format(title, text, quote(title))
+
+        twitter.update_status_with_media(status=status, media=io.BytesIO(r.content))
 
         break
 

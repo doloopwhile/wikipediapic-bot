@@ -1,0 +1,2 @@
+MAILTO=doloopwhile@gmail.com
+00,15,30,45 * * * * /var/bot/bot.sh
